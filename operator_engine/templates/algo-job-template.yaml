@@ -21,7 +21,7 @@ spec:
         resources: {}
         env: []
         securityContext:
-          allowPrivilegeEscalation: false
+          privileged: true
       restartPolicy: OnFailure
       schedulerName: default-scheduler
       securityContext: {}

@@ -1,10 +1,8 @@
-FROM python:3.8-slim-buster
+FROM python:3.8-slim-bullseye
 LABEL maintainer="Ocean Protocol <devops@oceanprotocol.com>"
 
 RUN apt-get update \
-    && apt-get upgrade -y \
     && apt-get install -y --no-install-recommends \
-        apt-utils \
         build-essential \
         gcc \
         libpq-dev \

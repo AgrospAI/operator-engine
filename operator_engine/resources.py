@@ -315,6 +315,12 @@ def create_algorithm_job(body, logger, resources):
     job["spec"]["template"]["spec"]["containers"][0]["env"].append(
         {"name": "secret", "value": body["metadata"]["secret"]}
     )
+
+    for key, value in body["metadata"].get("env", {}).items():
+        job["spec"]["template"]["spec"]["containers"][0]["env"].append(
+            {"name": key, "value": value}
+        )
+
     # Resources  (CPU & Memory)
     job["spec"]["template"]["spec"]["containers"][0]["resources"] = dict()
     job["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"] = dict()

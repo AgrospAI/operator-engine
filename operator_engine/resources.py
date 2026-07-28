@@ -3,6 +3,7 @@
 import json
 import os
 import uuid
+from typing import Dict, List
 
 import psycopg2
 import requests
@@ -16,7 +17,7 @@ import kubernetes
 
 
 def append_environment_variables(
-    values: list[dict[str, str]],
+    values: List[Dict[str, str]],
     prefix: str,
 ) -> None:
     for key in os.environ:

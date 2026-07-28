@@ -20,11 +20,14 @@ def append_environment_variables(
     values: List[Dict[str, str]],
     prefix: str,
 ) -> None:
-    for key in os.environ:
+    if not prefix:
+        return
+
+    for key, value in os.environ.items():
         if not key.startswith(prefix):
             continue
 
-        values.append({"value": os.environ.get(key)})
+        values.append({"key": key[len(prefix) :], "value": value})
 
 
 def create_all_pvc(body, logger, resources):

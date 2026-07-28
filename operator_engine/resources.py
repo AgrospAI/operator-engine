@@ -1,18 +1,29 @@
 #  Copyright 2023 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 import json
-import time
-import kubernetes
-import yaml
-import kopf
-import psycopg2
 import os
-import requests
 import uuid
-from web3 import Web3
+
+import psycopg2
+import requests
+import yaml
+from constants import OperatorConfig, PGConfig, VolumeConfig
 from eth_account import Account
 from kubernetes.client.rest import ApiException
-from constants import OperatorConfig, VolumeConfig, PGConfig
+from web3 import Web3
+
+import kubernetes
+
+
+def append_environment_variables(
+    values: list[dict[str, str]],
+    prefix: str,
+) -> None:
+    for key in os.environ:
+        if not key.startswith(prefix):
+            continue
+
+        values.append({"value": os.environ.get(key)})
 
 
 def create_all_pvc(body, logger, resources):
@@ -133,9 +144,9 @@ def create_configure_job(body, logger):
         "-c",
         init_script,
     ]
-    job["spec"]["template"]["spec"]["containers"][0][
-        "image"
-    ] = OperatorConfig.POD_CONFIGURATION_CONTAINER
+    job["spec"]["template"]["spec"]["containers"][0]["image"] = (
+        OperatorConfig.POD_CONFIGURATION_CONTAINER
+    )
 
     job["spec"]["template"]["spec"]["containers"][0]["env"].append(
         {"name": "INPUTS", "value": OperatorConfig.INPUTS_FOLDER}
@@ -168,6 +179,15 @@ def create_configure_job(body, logger):
     job["spec"]["template"]["spec"]["containers"][0]["env"].append(
         {"name": "POSTGRES_DB", "value": PGConfig.POSTGRES_DB}
     )
+    job["spec"]["template"]["spec"]["containers"][0]["env"].append(
+        {"name": "PRIVATE_KEY", "value": OperatorConfig.OPERATOR_PRIVATE_KEY}
+    )
+
+    append_environment_variables(
+        job["spec"]["template"]["spec"]["containers"][0]["env"],
+        prefix=OperatorConfig.CONFIGURE_JOB_ENVIRONMENT_PREFIX,
+    )
+
     job["spec"]["template"]["spec"]["containers"][0]["env"].append(
         {"name": "PRIVATE_KEY", "value": OperatorConfig.OPERATOR_PRIVATE_KEY}
     )
@@ -205,9 +225,9 @@ def create_configure_job(body, logger):
     )
     # set the account
     job["spec"]["template"]["spec"]["serviceAccount"] = OperatorConfig.SERVICE_ACCOUNT
-    job["spec"]["template"]["spec"][
-        "serviceAccountName"
-    ] = OperatorConfig.SERVICE_ACCOUNT
+    job["spec"]["template"]["spec"]["serviceAccountName"] = (
+        OperatorConfig.SERVICE_ACCOUNT
+    )
     # Workflow config volume
     job["spec"]["template"]["spec"]["volumes"].append(
         {
@@ -327,16 +347,16 @@ def create_algorithm_job(body, logger, resources):
     job["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"][
         "memory"
     ] = resources["requests_memory"]
-    job["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"][
-        "cpu"
-    ] = resources["requests_cpu"]
+    job["spec"]["template"]["spec"]["containers"][0]["resources"]["requests"]["cpu"] = (
+        resources["requests_cpu"]
+    )
     job["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"] = dict()
     job["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
         "memory"
     ] = resources["limits_memory"]
-    job["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"][
-        "cpu"
-    ] = resources["limits_cpu"]
+    job["spec"]["template"]["spec"]["containers"][0]["resources"]["limits"]["cpu"] = (
+        resources["limits_cpu"]
+    )
 
     # Volumes
     job["spec"]["template"]["spec"]["volumes"] = []
@@ -357,9 +377,9 @@ def create_algorithm_job(body, logger, resources):
 
     # set the account
     job["spec"]["template"]["spec"]["serviceAccount"] = OperatorConfig.SERVICE_ACCOUNT
-    job["spec"]["template"]["spec"][
-        "serviceAccountName"
-    ] = OperatorConfig.SERVICE_ACCOUNT
+    job["spec"]["template"]["spec"]["serviceAccountName"] = (
+        OperatorConfig.SERVICE_ACCOUNT
+    )
     # Workflow config volume
     job["spec"]["template"]["spec"]["volumes"].append(
         {
@@ -401,9 +421,9 @@ def create_filter_job(body, logger, resources):
     ]["workflow"]
     job["spec"]["template"]["metadata"]["labels"]["component"] = "filter"
 
-    job["spec"]["template"]["spec"]["containers"][0][
-        "image"
-    ] = OperatorConfig.FILTERING_CONTAINER
+    job["spec"]["template"]["spec"]["containers"][0]["image"] = (
+        OperatorConfig.FILTERING_CONTAINER
+    )
 
     # Env
     dids = list()
@@ -455,9 +475,9 @@ def create_filter_job(body, logger, resources):
 
     # set the account
     job["spec"]["template"]["spec"]["serviceAccount"] = OperatorConfig.SERVICE_ACCOUNT
-    job["spec"]["template"]["spec"][
-        "serviceAccountName"
-    ] = OperatorConfig.SERVICE_ACCOUNT
+    job["spec"]["template"]["spec"]["serviceAccountName"] = (
+        OperatorConfig.SERVICE_ACCOUNT
+    )
     # Workflow config volume
     job["spec"]["template"]["spec"]["volumes"].append(
         {
@@ -503,9 +523,9 @@ def create_publish_job(body, logger):
         "-c",
         init_script,
     ]
-    job["spec"]["template"]["spec"]["containers"][0][
-        "image"
-    ] = OperatorConfig.POD_PUBLISH_CONTAINER
+    job["spec"]["template"]["spec"]["containers"][0]["image"] = (
+        OperatorConfig.POD_PUBLISH_CONTAINER
+    )
 
     job["spec"]["template"]["spec"]["containers"][0]["env"].append(
         {"name": "CREDENTIALS", "value": OperatorConfig.ACCOUNT_JSON}
@@ -641,9 +661,9 @@ def create_publish_job(body, logger):
 
     # set the account
     job["spec"]["template"]["spec"]["serviceAccount"] = OperatorConfig.SERVICE_ACCOUNT
-    job["spec"]["template"]["spec"][
-        "serviceAccountName"
-    ] = OperatorConfig.SERVICE_ACCOUNT
+    job["spec"]["template"]["spec"]["serviceAccountName"] = (
+        OperatorConfig.SERVICE_ACCOUNT
+    )
 
     # Workflow config volume
     job["spec"]["template"]["spec"]["volumes"].append(
@@ -818,9 +838,9 @@ def update_imagePullSecrets(job, logger):
 def update_imagePullPolicy(job, logger):
     if OperatorConfig.PULL_POLICY is None:
         return job
-    job["spec"]["template"]["spec"]["containers"][0][
-        "imagePullPolicy"
-    ] = OperatorConfig.PULL_POLICY
+    job["spec"]["template"]["spec"]["containers"][0]["imagePullPolicy"] = (
+        OperatorConfig.PULL_POLICY
+    )
     return job
 
 

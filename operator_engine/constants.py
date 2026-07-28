@@ -1,7 +1,7 @@
 #  Copyright 2023 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
-from os import getenv
 import logging
+from os import getenv
 
 
 class PGConfig:
@@ -112,6 +112,11 @@ class OperatorConfig:
     ENVIROMENT_maxJobs = getenv("maxJobs", 10)
     ENVIROMENT_storageExpiry = getenv("STORAGE_EXPIRY", 0)
     ENVIROMENT_maxJobDuration = getenv("maxJobDuration", 60)
+
+    CONFIGURE_JOB_ENVIRONMENT_PREFIX = getenv(
+        "CONFIGURE_JOB_ENVIRONMENT_PREFIX",
+        "CFG_",
+    )
 
 
 class VolumeConfig:

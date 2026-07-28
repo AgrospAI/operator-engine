@@ -27,7 +27,7 @@ def append_environment_variables(
         if not key.startswith(prefix):
             continue
 
-        values.append({"key": key[len(prefix) :], "value": value})
+        values.append({"name": key[len(prefix) :], "value": value})
 
 
 def create_all_pvc(body, logger, resources):
